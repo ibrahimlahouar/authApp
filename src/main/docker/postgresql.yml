@@ -2,12 +2,14 @@
 name: appauth
 services:
   postgresql:
+    container_name: postgresql
     image: postgres:16.3
     # volumes:
     #   - ~/volumes/jhipster/appAuth/postgresql/:/var/lib/postgresql/data/
     environment:
       - POSTGRES_USER=appAuth
       - POSTGRES_PASSWORD=
+      - POSTGRES_DB=appAuth
       - POSTGRES_HOST_AUTH_METHOD=trust
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER}']

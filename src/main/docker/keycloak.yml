@@ -2,13 +2,17 @@
 name: appauth
 services:
   keycloak:
+    container_name: keycloak
     image: quay.io/keycloak/keycloak:25.0.1
     command: 'start-dev --import-realm'
     volumes:
       - ./realm-config:/opt/keycloak/data/import
       - ./realm-config/keycloak-health-check.sh:/opt/keycloak/health-check.sh
     environment:
-      - KC_DB=dev-file
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://postgresql:5432/appAuth
+      - KC_DB_USERNAME=appAuth
+      - KC_DB_PASSWORD=
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
       - KC_FEATURES=scripts
