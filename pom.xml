@@ -404,7 +404,7 @@
                             </platforms>
                         </from>
                         <to>
-                            <image>appauth:latest</image>
+                            <image>ibrahimlahouar/appauth:${version}</image>
                         </to>
                         <container>
                             <entrypoint>
