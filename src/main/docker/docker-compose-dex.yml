@@ -1,0 +1,172 @@
+version: '3.8'
+
+networks:
+  app-network:
+    driver: bridge
+
+services:
+  appauth:
+    image: ibrahimlahouar/appauth:0.0.1-SNAPSHOT
+    environment:
+      - _JAVA_OPTIONS=-Xmx512m -Xms256m
+      - SPRING_PROFILES_ACTIVE=prod,api-docs
+      - MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED=true
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/appAuth
+      - SPRING_LIQUIBASE_URL=jdbc:postgresql://postgresql:5432/appAuth
+      - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER_URI=http://dex:5556/dex
+      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_ID=web_app
+      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_SECRET=web_app_secret
+    ports:
+      - '8080:8080'
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - '-f'
+        - http://localhost:8080/management/health
+      interval: 5s
+      timeout: 5s
+      retries: 40
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      dex:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  appauth2:
+    image: ibrahimlahouar/appauth2:0.0.1-SNAPSHOT
+    environment:
+      - _JAVA_OPTIONS=-Xmx512m -Xms256m
+      - SPRING_PROFILES_ACTIVE=prod,api-docs
+      - MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED=true
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/appAuth
+      - SPRING_LIQUIBASE_URL=jdbc:postgresql://postgresql:5432/appAuth
+      - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER_URI=http://dex:5556/dex
+      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_ID=web_app2
+      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_SECRET=web_app2_secret
+    ports:
+      - '8081:8081'
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - '-f'
+        - http://localhost:8081/management/health
+      interval: 5s
+      timeout: 5s
+      retries: 40
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      dex:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  postgresql:
+    container_name: postgresql
+    image: postgres:16.3
+    environment:
+      - POSTGRES_USER=appAuth
+      - POSTGRES_PASSWORD=
+      - POSTGRES_DB=appAuth
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - 127.0.0.1:5432:5432
+    networks:
+      - app-network
+
+  ldap:
+    image: osixia/openldap:1.5.0
+    container_name: ldap
+    environment:
+      LDAP_ORGANISATION: "My Company"
+      LDAP_DOMAIN: "mycompany.com"
+      LDAP_ADMIN_PASSWORD: "admin"
+    ports:
+      - "389:389"
+      - "636:636"
+    volumes:
+      - ./ldap_data:/var/lib/ldap
+      - ./ldap_config:/etc/ldap/slapd.d
+    networks:
+      - app-network
+
+  keycloak:
+    container_name: keycloak
+    image: quay.io/keycloak/keycloak:25.0.1
+    command: 'start-dev --import-realm'
+    volumes:
+      - ./realm-config:/opt/keycloak/data/import
+      - ./realm-config/keycloak-health-check.sh:/opt/keycloak/health-check.sh
+    environment:
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://postgresql:5432/appAuth
+      - KC_DB_USERNAME=appAuth
+      - KC_DB_PASSWORD=
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_FEATURES=scripts
+      - KC_HTTP_PORT=9080
+      - KC_HTTPS_PORT=9443
+      - KC_HEALTH_ENABLED=true
+      - KC_HTTP_MANAGEMENT_PORT=9990
+      - LDAP_URL=ldap://ldap:389
+      - LDAP_BIND_DN=cn=ilahouar,dc=mycompany,dc=com
+      - LDAP_BIND_CREDENTIALS=ilahouar123
+      - LDAP_USERS_DN=ou=users,dc=mycompany,dc=com
+      - LDAP_GROUPS_DN=ou=groups,dc=mycompany,dc=com
+    ports:
+      - 127.0.0.1:9080:9080
+      - 127.0.0.1:9443:9443
+    healthcheck:
+      test: 'bash /opt/keycloak/health-check.sh'
+      interval: 5s
+      timeout: 5s
+      retries: 40
+      start_period: 10s
+    networks:
+      - app-network
+
+  dex:
+    image: ghcr.io/dexidp/dex:v2.35.3
+    container_name: dex
+    ports:
+      - "5556:5556"  # Port pour l'API et l'interface utilisateur
+    volumes:
+      - ./dex-config.yaml:/etc/dex/cfg/config.yaml
+    command: ["dex", "serve", "/etc/dex/cfg/config.yaml"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5556/dex/.well-known/openid-configuration"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    networks:
+      - app-network    
+
+  phpldapadmin:
+    image: osixia/phpldapadmin:0.9.0
+    platform: linux/amd64
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: ldap
+      PHPLDAPADMIN_HTTPS: "false"
+    ports:
+      - "8082:80"
+    depends_on:
+      - ldap
+    networks:
+      - app-network

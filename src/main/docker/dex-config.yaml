@@ -1,0 +1,36 @@
+issuer: http://dex:5556/dex
+
+storage:
+  type: sqlite3
+  config:
+    file: /var/dex/dex.db
+
+web:
+  http: 0.0.0.0:5556
+
+connectors:
+- type: oidc
+  id: keycloak
+  name: Keycloak
+  config:
+    issuer: http://keycloak:9080/realms/jhipster  
+    clientID: dex-client
+    clientSecret: dex-client-secret
+    redirectURI: http://dex:5556/dex/callback
+
+oauth2:
+  skipApprovalScreen: true
+  responseTypes: ["code", "token", "id_token"]
+
+staticClients:
+- id: web_app
+  redirectURIs:
+  - 'http://localhost:8080/login/oauth2/code/oidc'
+  name: 'Web App'
+  secret: web_app_secret
+
+- id: web_app2
+  redirectURIs:
+  - 'http://localhost:8081/login/oauth2/code/oidc'
+  name: 'Web App 2'
+  secret: web_app2_secret

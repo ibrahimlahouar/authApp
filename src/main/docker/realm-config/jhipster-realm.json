@@ -309,7 +309,7 @@
       ],
       "jhipster-control-center": [],
       "security-admin-console": [],
-      "web_app": [],
+      "dex-client": [],
       "admin-cli": [],
       "account-console": [],
       "broker": [
@@ -762,56 +762,38 @@
     },
     {
       "id": "6e8deddb-b4d6-4e2e-b389-b397d3f74fcd",
-      "clientId": "web_app",
-      "rootUrl": "http://localhost:8080",
-      "adminUrl": "http://localhost:8080",
+      "clientId": "dex-client",
+      "rootUrl": "http://localhost:5556",
+      "adminUrl": "http://localhost:5556",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "web_app",
+      "secret": "dex-client-secret",
       "redirectUris": [
-        "dev.localhost.ionic:*",
-        "http://127.0.0.1:*",
-        "http://localhost:*",
-        "https://127.0.0.1:*",
-        "https://localhost:*",
-        "https://oauth.pstmn.io/v1/callback"
+        "http://dex:5556/dex/callback"
       ],
       "webOrigins": ["*"],
       "notBefore": 0,
       "bearerOnly": false,
       "consentRequired": false,
       "standardFlowEnabled": true,
-      "implicitFlowEnabled": true,
+      "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": false,
-      "publicClient": true,
+      "publicClient": false,
       "frontchannelLogout": false,
       "protocol": "openid-connect",
       "attributes": {
-        "saml.assertion.signature": "false",
-        "saml.force.post.binding": "false",
-        "saml.multivalued.roles": "false",
-        "saml.encrypt": "false",
-        "post.logout.redirect.uris": "+",
-        "saml.server.signature": "false",
-        "saml.server.signature.keyinfo.ext": "false",
-        "exclude.session.state.from.auth.response": "false",
-        "saml_force_name_id_format": "false",
-        "saml.client.signature": "false",
-        "tls.client.certificate.bound.access.tokens": "false",
-        "saml.authnstatement": "false",
-        "display.on.consent.screen": "false",
-        "saml.onetimeuse.condition": "false"
+        "post.logout.redirect.uris": "+"
       },
       "authenticationFlowBindingOverrides": {},
       "fullScopeAllowed": true,
       "nodeReRegistrationTimeout": -1,
-      "defaultClientScopes": ["web-origins", "acr", "jhipster", "roles", "profile", "email"],
+      "defaultClientScopes": ["web-origins", "acr", "roles", "profile", "email"],
       "optionalClientScopes": ["address", "phone", "offline_access", "microprofile-jwt"]
-    }
-  ],
+    } 
+    ],
   "clientScopes": [
     {
       "id": "52d73c82-423c-44a8-b2ec-1e13f4cd6065",

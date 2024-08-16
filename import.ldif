@@ -1,0 +1,43 @@
+# Création de l'unité organisationnelle pour les utilisateurs
+dn: ou=Users,dc=mycompany,dc=com
+objectClass: organizationalUnit
+ou: Users
+
+# Création de l'unité organisationnelle pour les groupes
+dn: ou=Groups,dc=mycompany,dc=com
+objectClass: organizationalUnit
+ou: Groups
+
+# Ajout des utilisateurs
+dn: cn=ilahouar,ou=Users,dc=mycompany,dc=com
+cn: ilahouar
+objectClass: inetOrgPerson
+objectClass: top
+sn: ilahouar
+uid: ilahouar
+mail: ilahouar@odp.com
+userPassword: ilahouar123
+
+dn: cn=salexandre,ou=Users,dc=mycompany,dc=com
+cn: salexandre
+objectClass: inetOrgPerson
+objectClass: top
+sn: salexandre
+uid: salexandre
+mail: salexandre@odp.com
+userPassword: salexandre123
+
+# Ajout des groupes et affectation des membres
+dn: cn=rw_users,ou=Groups,dc=mycompany,dc=com
+cn: rw_users
+gidNumber: 200116
+memberUid: ilahouar
+objectClass: posixGroup
+objectClass: top
+
+dn: cn=ro_users,ou=Groups,dc=mycompany,dc=com
+cn: ro_users
+gidNumber: 200115
+memberUid: salexandre
+objectClass: posixGroup
+objectClass: top
